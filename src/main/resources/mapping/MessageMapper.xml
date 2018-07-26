@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bonc.mapper.MessageMapper">
+
+	 <!--  查询获取需要发送的短信任务 -->
+	  <select id="scanTaskMessage"  resultType="java.util.HashMap">
+	  SELECT TO_CHAR(ROWNUM) SMS_SEQ , A.* ,B.DEVICE_NUMBER, 
+	  '106550008513' SP_NUMBER, D.MESSAGE_CONTENT
+	  FROM SMS_SEND_FLAG A , SMS_DEVICE_NUMBER B , SMS_DEVICE_MESSAGE C , SMS_MESSAGE D 
+	  WHERE A.SEND_FLAG = 0 AND A.SALE_ID = B.SALE_ID
+      AND A.THREAD_NUMBER = C.THREAD_NUMBER AND C.MESSAGE_ID = D.MESSAGE_ID 
+	  </select>
+	 <!--   统计待发送短信任务条数 -->
+	  <select id="countMessageTableTask">
+	  
+	  
+	  </select>
+</mapper>
