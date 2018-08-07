@@ -8,14 +8,18 @@ import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.bonc.pojo.Configuration;
+import com.bonc.pojo.MessageTask;
+import com.bonc.service.MessageService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@MapperScan("com.bonc.mapper") //mybatis映射扫描
 public class SmsApplicationTests {
 	@Autowired
 	private Configuration configuration;
@@ -57,6 +61,19 @@ public class SmsApplicationTests {
 		long bLong= 1000L;
 		System.out.println(aLong==bLong);
 		
+	}
+	@Autowired
+	private MessageService messageService;
+	@Test
+	public void name2() {
+		List<MessageTask> scanMessageTask = messageService.scanMessageTask();
+		System.out.println(scanMessageTask);
+	}
+	
+	@Test
+	public void name3() {
+//		 messageService.updateTaskStatuBySaleId("test");
+		System.out.println(configuration);
 	}
 
 }

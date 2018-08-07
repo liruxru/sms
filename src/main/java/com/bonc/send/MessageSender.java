@@ -23,6 +23,7 @@ import spApi.SubmitResp;
 import spApi.Unbind;
 
 import com.bonc.pojo.Configuration;
+import com.bonc.pojo.Constant;
 import com.bonc.pojo.MessageTask;
 import com.bonc.util.SpringUtil;
 import com.bonc.util.StringUtil;
@@ -36,6 +37,7 @@ public class MessageSender
 {	
 	// 饿汉单例
 	private static MessageSender messageSender=null;
+	private static Configuration configuration = null;
 	public static final String DEFAULT_CP = "10016";
 	private MessageSender(){
 		// 构造器私有化
@@ -78,7 +80,7 @@ public class MessageSender
 					// 获取配置信息 从数据库查询
 //					SpringUtil.getBean("");
 					// 暂时通过配置文件直接读取配置
-					Configuration configuration = (Configuration) SpringUtil.getBean("configuration");
+					configuration = (Configuration) SpringUtil.getBean("configuration");
 					messageSender = new MessageSender(configuration);
 					return messageSender;
 				}
@@ -92,7 +94,7 @@ public class MessageSender
 	 * @return
 	 */
 	public static MessageSender build(){
-		Configuration configuration = (Configuration) SpringUtil.getBean("configuration");
+		configuration = (Configuration) SpringUtil.getBean("configuration");
 		return new MessageSender(configuration);
 	}
 	
@@ -121,7 +123,8 @@ public class MessageSender
 			try {
 				socket = new Socket();
 				socket.connect(serverSocketAddress, 5000);
-
+				
+				Thread.sleep(1000);
 				isConnect = true;
 				log.info("Connect server socket at address: "
 						+ socket.toString());
@@ -135,7 +138,7 @@ public class MessageSender
 			socketOutputStream = new DataOutputStream(socket.getOutputStream());
 			socketInputStream = new DataInputStream(socket.getInputStream());
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("获取管道流失败"+e.getMessage());
 			return false;
 		}
 
@@ -144,12 +147,12 @@ public class MessageSender
 				loginUser, // login name
 				loginPasswd); // login password
 		bind.write(socketOutputStream);
-
+		log.debug("bind.......{},{}",loginUser,loginPasswd);
 		SGIP_Command temp = null;
 		try {
 			temp = sgipCommand.read(socketInputStream);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 			return false;
 		}
 
@@ -157,7 +160,7 @@ public class MessageSender
 			BindResp bindResp = (BindResp) temp;
 			bindResp.readbody();
 		}
-
+		log.debug("bind.......success");
 		return true;
 	}
 
@@ -171,7 +174,6 @@ public class MessageSender
 			socket.close();
 		} catch (Exception e) {
 			log.error("[unBind] Exception: {}", e.getMessage());
-			e.printStackTrace();
 		}
 	}
 
@@ -185,8 +187,22 @@ public class MessageSender
 		try{
 			Thread.sleep(sleepInter);
 		}catch (InterruptedException e){
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
+		synchronized (Constant.SEND_LOCK) {
+			if(Constant.countMessageNumber%20==0){
+				try {
+					// 线程休眠不释放锁,全部线程都在等待
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			Constant.countMessageNumber = ++Constant.countMessageNumber%20;
+		}
+		
 		// boolean isSuccess = prepareSend(prefix + userNumber, message, fee, socketOutputStream);
 		return prepareSend(prefix + userNumber, message, fee, socketOutputStream);
 	}
@@ -363,6 +379,7 @@ public class MessageSender
 			return true;
 		} catch (SGIP_Exception e) {
 			log.error("[sendMessage] SGIP_Exception: {}", e.getMessage());
+			e.printStackTrace();
 			return false;
 		} catch (Exception e) {
 			log.error("[sendMessage] Exception:{}", e.getMessage());
@@ -439,7 +456,8 @@ public class MessageSender
 	 * 发送短信任务
 	 * @param messageTask
 	 */
-	public synchronized void send(MessageTask messageTask) {
+	public void send(MessageTask messageTask) {
+			
 		// 绑定
 		if (!this.bind()) {
 			this.unBind();
@@ -451,6 +469,8 @@ public class MessageSender
 			}
 			this.bind();
 		}  
+		
+		
 		// 消息内容
 		String smsContent =messageTask.getContent();
 		// 消息长度
@@ -458,35 +478,18 @@ public class MessageSender
 		switchLong(smsLength);
 		
 		// 目标用户集合
-		List<String> userNumber = messageTask.getUserNumber();
+		List<String> userNumber = messageTask.getUserNumbers();
 		
 		
 		// 设置发信人的电话号码 SP_NUMBER
-		String spNumber = "";
+		String spNumber = configuration.getSpNumber();
 		this.setCpPhone(spNumber); // 设置发信人的电话号码
 		
 		// 逐条逐个用户发送    deviceNumber //目标用户号码
-		for (String deviceNumber : userNumber) {
-			
-		}
-		
 		for (int i = 0; i < userNumber.size(); i++) {
 			if (null!=userNumber.get(i)) {
 				this.send(userNumber.get(i), smsContent);
 			}
-			if (i%20==0) {
-				try {
-					/**
-					 * 单线程模式下
-					 */
-					if(1000-20*this.getSleepInter()>0)
-					Thread.sleep(1000-20*this.getSleepInter());
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
 		}
 		
 		

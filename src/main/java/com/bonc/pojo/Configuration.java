@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  */
 @Data
 @Component("configuration")
-@ConfigurationProperties(prefix = "messageSender")
+@ConfigurationProperties(prefix = "messager")
 public class Configuration {
 	private String serverIp = "10.157.39.14"; // *******************192.10.10.8
 	private int port = 8801; // *******************8801
@@ -63,6 +63,8 @@ public class Configuration {
 
 	public int sequenceNumber = -1; // 信息序列号
 	private boolean isLongMessage = false; // 是否长短信
+	
+	private String spNumber;
 	
 
 }
