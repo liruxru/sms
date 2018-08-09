@@ -1,10 +1,17 @@
 package com.bonc.send;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
 
 import com.bonc.pojo.MessageTask;
+import com.bonc.service.MessageService;
+import com.bonc.util.SpringUtil;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CustomerSender implements Runnable{
@@ -33,7 +40,14 @@ public class CustomerSender implements Runnable{
 		// 发送
 		for (MessageTask messageTask : smsList) {
 			try {
-				messageSender.send(messageTask);
+				// 满足发送时间就发送
+				if(isRealTime(messageTask)) {
+					messageSender.send(messageTask);
+					updateAndLog(messageTask);
+				}else {
+					// 修改状态为2
+					updateStatus(messageTask);
+				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
@@ -42,6 +56,37 @@ public class CustomerSender implements Runnable{
 		log.info(" thread normal end! sned " + smsList.size() + " .");
 		
 	}
+
+	private void updateAndLog(MessageTask messageTask) {
+		MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+		// 修改状态
+		messageService.updateTaskStatuBySaleId(messageTask.getSaleId());
+		// 日志记录
+		messageService.insertTaskLog(messageTask);
+	}
+	
+	private void updateStatus(MessageTask messageTask) {
+		MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+		// 修改状态
+		messageService.updateTaskStatuBySaleId(messageTask.getSaleId(),2);
+	}
+
+	private boolean isRealTime(MessageTask messageTask) throws ParseException {
+		Integer threadNumber = messageTask.getThreadNumber();
+		// 判断是否在发送时间内
+    	MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+    	Map<String, String> times = messageService.getTimesByThreadNum(threadNumber);
+    	String startTime = times.get("STARTTIME");
+		String endTime = times.get("ENDTIME");
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+		
+		Date now = sdf.parse(sdf.format(new Date()));
+		if(sdf.parse(startTime).before(now) && sdf.parse(endTime).after(now))
+			return true;
+		return false;
+	}
+	
+
 
 
 }

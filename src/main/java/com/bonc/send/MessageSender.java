@@ -189,19 +189,7 @@ public class MessageSender
 		}catch (InterruptedException e){
 			log.error(e.getMessage());
 		}
-		synchronized (Constant.SEND_LOCK) {
-			if(Constant.countMessageNumber%20==0){
-				try {
-					// 线程休眠不释放锁,全部线程都在等待
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			
-			Constant.countMessageNumber = ++Constant.countMessageNumber%20;
-		}
+
 		
 		// boolean isSuccess = prepareSend(prefix + userNumber, message, fee, socketOutputStream);
 		return prepareSend(prefix + userNumber, message, fee, socketOutputStream);
@@ -294,8 +282,11 @@ public class MessageSender
 						messageByteLength);
 
 				String content = new String(byteContent, "ISO8859-1");
+		
+				
 				if (!sendMessage(mobileNumber, content, fee))
 					return false;
+				
 
 				thread.sleep(sleepInter);
 			}
@@ -317,6 +308,38 @@ public class MessageSender
 	 */
 	private boolean sendMessage(String mobileNumber, String messageContent,
 			String fee) {
+		
+		
+			synchronized (Constant.SEND_LOCK) {
+		      /*很多个线程发送时采用此方法*/
+				/*if(Constant.countMessageNumber%20==0){
+					try {
+						// 线程休眠不释放锁,全部线程都在等待
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				*/
+				
+				/*单个线程采用此方法*/
+				
+				if(Constant.countMessageNumber%20==0&&(1000-20*sleepInter)>0) {
+					try {
+						Thread.sleep(1000-20*sleepInter);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				
+				Constant.countMessageNumber = ++Constant.countMessageNumber%20;
+			}
+		
+	
+		
 		if (StringUtil.isNullOrEmpty(expireTime)) {
 			SimpleDateFormat dateFormatter = new SimpleDateFormat(
 					"yyMMddHHmmss032+");
@@ -490,6 +513,7 @@ public class MessageSender
 			if (null!=userNumber.get(i)) {
 				this.send(userNumber.get(i), smsContent);
 			}
+			
 		}
 		
 		

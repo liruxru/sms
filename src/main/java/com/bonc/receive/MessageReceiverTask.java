@@ -87,6 +87,7 @@ public class MessageReceiverTask implements Runnable {
 		}
 
 		boolean loop = true;
+		boolean insertLog = true;
 		while (loop) {
 			try {
 				sgipTemp = sgipCommand.read(inputStream);
@@ -136,7 +137,6 @@ public class MessageReceiverTask implements Runnable {
 					break;
 
 				messageService.insertReplyMessage(userNumber, spNumber, messageContent);
-
 				break;
 			}
 			case SGIP_Command.ID_SGIP_BIND: {
@@ -146,7 +146,6 @@ public class MessageReceiverTask implements Runnable {
 				bindResp = new BindResp(399000, // node id 3＋CP_id
 						0); // result
 				bindResp.write(outputStream);
-
 				break;
 			}
 			case SGIP_Command.ID_SGIP_UNBIND: {
@@ -154,28 +153,26 @@ public class MessageReceiverTask implements Runnable {
 				unBindResp.write(outputStream);
 
 				System.out.println("SGIP_Command.ID_SGIP_UNBIND");
-				loop = false;
 
 				break;
 			}
 			case SGIP_Command.ID_SGIP_REPORT: {
-				report = (Report) sgipTemp; // 强制转换
-				report.readbody(); // 解包
+					report = (Report) sgipTemp; // 强制转换
+					report.readbody(); // 解包
 
-				reportResp = new ReportResp(390999, // node id 3＋CP_id
-						0); // result
-				reportResp.SetResult(0);
-				reportResp.write(outputStream);
+					reportResp = new ReportResp(390999, // node id 3＋CP_id
+							0); // result
+					reportResp.SetResult(0);
+					reportResp.write(outputStream);
 
-				String userNumber = StringUtil.trimString(report.getUserNumber()).replaceAll("^[+]*86", "");
-				Integer totalLength = report.getTotalLength();
-				Integer state = report.getState();
-				Integer errorCode = report.getErrorCode();
-				Integer reportType = report.getReportType();
-
-				// 插入状态日志
-				messageService.insertReportLog(userNumber, totalLength, state, errorCode, reportType);
-
+					String userNumber = StringUtil.trimString(report.getUserNumber()).replaceAll("^[+]*86", "");
+					Integer totalLength = report.getTotalLength();
+					Integer state = report.getState();
+					Integer errorCode = report.getErrorCode();
+					Integer reportType = report.getReportType();
+					
+					// 插入状态日志
+					messageService.insertReportLog(userNumber, totalLength, state, errorCode, reportType);
 				break;
 			}
 			case SGIP_Command.ID_SGIP_USERRPT: {
@@ -189,7 +186,7 @@ public class MessageReceiverTask implements Runnable {
 				userrptResp = new UserrptResp(390999, 0);
 				userrptResp.SetResult(12);
 				userrptResp.write(outputStream);
-
+				loop = false;
 				break;
 			}
 

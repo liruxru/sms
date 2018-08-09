@@ -1,5 +1,6 @@
 package com.bonc.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bonc.mapper.MessageMapper;
 import com.bonc.pojo.MessageTask;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @Transactional
+@Slf4j
 public class MessageService {
 	@Autowired
 	private MessageMapper messageMapper;
@@ -48,17 +52,46 @@ public class MessageService {
 		 messageMapper.updateTaskStatuBySaleId(saleId);
 	}
 	public void insertTaskLog(MessageTask messageTask) {
+		List<Map<String,String>> paramMaps = new ArrayList<>();
 		List<String> userNumbers = messageTask.getUserNumbers();
-		Map<String, String> paramMap = new HashMap<String, String>();
-		paramMap.put("saleId", messageTask.getSaleId());
-		paramMap.put("monthId", messageTask.getMonthId());
-		paramMap.put("dayId", messageTask.getDayId());
-		paramMap.put("dataNo", messageTask.getDataNo());
-		paramMap.put("deviceType", messageTask.getDeviceType()+"");
+		
 		for (String deviceNumber : userNumbers) {
+			Map<String, String> paramMap = new HashMap<String, String>();
+			paramMap.put("saleId", messageTask.getSaleId());
+			paramMap.put("monthId", messageTask.getMonthId());
+			paramMap.put("dayId", messageTask.getDayId());
+			paramMap.put("dataNo", messageTask.getDataNo());
+			paramMap.put("deviceType", messageTask.getDeviceType()+"");
 			paramMap.put("deviceNumber",deviceNumber );
-			messageMapper.insertTaskLog(paramMap);
+			paramMaps.add(paramMap);
 		}
+		try {
+			messageMapper.insertTaskLogs(paramMaps);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.error("插入任务日志报错-->{}",e);
+		}
+	}
+	/**
+	  * 获取管理员设置的任务调度时间
+	 * @return
+	 */
+	public String getCron() {
+		Map<String,String> times = messageMapper.getTimes();
+		System.out.println(times);
+		String startTime = times.get("STARTTIME").substring(0, 2);
+		String endTime = times.get("ENDTIME").substring(0, 2);
+		return "0 0/15 "+startTime+"-"+endTime+" * * ?";
+	}
+	
+	public Map<String,String>  getTimesByThreadNum(Integer threadNumber) {
+		return messageMapper.getTimesByThreadNum(threadNumber);
+		
+	}
+	public void updateTaskStatuBySaleId(String saleId, int i) {
+		messageMapper.updateTaskStatuBySaleIdAndStatus(saleId,i);
+		
 	}
 
 }

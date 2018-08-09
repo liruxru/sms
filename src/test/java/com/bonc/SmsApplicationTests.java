@@ -1,9 +1,13 @@
 package com.bonc;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -16,6 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.bonc.pojo.Configuration;
 import com.bonc.pojo.MessageTask;
 import com.bonc.service.MessageService;
+import com.bonc.util.SpringUtil;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -74,6 +79,47 @@ public class SmsApplicationTests {
 	public void name3() {
 //		 messageService.updateTaskStatuBySaleId("test");
 		System.out.println(configuration);
+	}
+	/**
+	 * 历史记录插入测试
+	 */
+	@Test
+	public void name4() {
+		try {
+			List<MessageTask> scanMessageTask = messageService.scanMessageTask();
+			System.out.println(scanMessageTask);
+			for (MessageTask messageTask : scanMessageTask) {
+				messageTask.getUserNumbers().add("18341893958");
+				messageService.insertTaskLog(messageTask);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	@Test
+	public void name5() {
+		String cron = messageService.getCron();
+		System.out.println(cron);
+	}
+	@Test
+	public void name6() throws ParseException {
+		
+		// 判断是否在发送时间内
+    	MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+    	Map<String, String> times = messageService.getTimesByThreadNum(1);
+    	String startTime = times.get("STARTTIME");
+		String endTime = times.get("ENDTIME");
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+		System.out.println(sdf.parse(startTime));
+		System.out.println(sdf.parse(endTime));
+		Date now = sdf.parse(sdf.format(new Date()));
+		System.out.println(now);
+		if(sdf.parse(startTime).before(now) && sdf.parse(endTime).after(now)) {
+			System.out.println("ok");
+		}
+		
 	}
 
 }

@@ -45,8 +45,6 @@ public class SenderClient extends Thread{
 			
 			// 发送线程,分发任务  根据threadNum分发给线程
 			List<MessageTask> messages = MessageQueue.messages;
-			// 备份作日志
-			List<MessageTask> messageTaskBack = new ArrayList<MessageTask>(messages);
 			
 			// 计算threadNum的个数
 			/**
@@ -61,11 +59,17 @@ public class SenderClient extends Thread{
 			    List<MessageTask> smsSubList = new ArrayList<MessageTask>();
 			    for (MessageTask messageTask : messages) {
 			    	// 满足条件加入集合
-			    	if(messageTask.getThreadNumber().equals(sortThreadTask.get(i)) 
+			    	Integer threadNumber = messageTask.getThreadNumber();
+			    	
+					if(threadNumber.equals(sortThreadTask.get(i)) 
 			    			&&messageTask.getNumberCount()>0
 			    			&&messageTask.getUserNumbers()!=null
-			    			&&messageTask.getUserNumbers().size()>0)
-			    	smsSubList.add(messageTask);
+			    			&&messageTask.getUserNumbers().size()>0) {
+			    		
+			    		smsSubList.add(messageTask);
+			    	}
+			    		
+			    	
 				}
 			    // 移除被分发的集合，加快下次的遍历速度
 			    messages.remove(smsSubList);
@@ -95,22 +99,11 @@ public class SenderClient extends Thread{
 			
 			
 			Constant.LOCK.notifyAll();
-			// 修改状态,日志处理 
-			updateAndLog(messageTaskBack);
+		
 	    }
 		
 	}
 
-
-	private void updateAndLog(List<MessageTask> messageTaskBack) {
-		MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
-		for (MessageTask messageTask : messageTaskBack) {
-			// 修改状态
-			messageService.updateTaskStatuBySaleId(messageTask.getSaleId());
-			// 日志记录
-			messageService.insertTaskLog(messageTask);
-		}
-	}
 
 
 	/**

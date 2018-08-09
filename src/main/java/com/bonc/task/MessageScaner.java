@@ -23,9 +23,9 @@ public class MessageScaner {
 	
 	
 	/**
-	 * 设定时间扫描任务准备发送  8:00 - 22:00 每5分钟
+	 * 设定时间扫描任务准备发送 每15分钟扫描一次任务
 	 */
-	@Scheduled(cron="0 0/5 8-22 * * ?")
+	@Scheduled(cron="0 0/15 * * * ?")
 	public void scanMessageTask(){
 		synchronized (Constant.LOCK) {
 			List<MessageTask> messages = messageService.scanMessageTask();

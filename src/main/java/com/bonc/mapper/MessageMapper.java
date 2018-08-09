@@ -34,5 +34,23 @@ public interface MessageMapper {
 	 * @param reportType
 	 */
 	public void insertReportLog(Map<String, Object> paramMap);
+	/**
+	 *  批量插入网关返回状态信息
+	 * @param paramMaps
+	 */
+
+	public void insertTaskLogs(List<Map<String, String>> paramMaps);
+
+	/**
+	  * 查询起始时间和终止时间
+	 * @return
+	 */
+	public Map<String, String> getTimes();
+
+
+	public Map<String, String> getTimesByThreadNum(Integer threadNumber);
+
+
+	public void updateTaskStatuBySaleIdAndStatus(String saleId, int i);
 
 }
