@@ -41,7 +41,7 @@ public class CustomerSender implements Runnable{
 		for (MessageTask messageTask : smsList) {
 			try {
 				// 满足发送时间就发送
-				if(isRealTime(messageTask)) {
+				if(isRealTime(messageTask)&&messageTask.getUserNumbers()!=null&&messageTask.getUserNumbers().size()>0) {
 					messageSender.send(messageTask);
 					updateAndLog(messageTask);
 				}else {
@@ -50,6 +50,7 @@ public class CustomerSender implements Runnable{
 				}
 			}
 			catch (Exception e) {
+				log.error("发送任务异常{}",e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -70,7 +71,12 @@ public class CustomerSender implements Runnable{
 		// 修改状态
 		messageService.updateTaskStatuBySaleId(messageTask.getSaleId(),2);
 	}
-
+	/**
+	 * 
+	 * @param messageTask
+	 * @return
+	 * @throws Exception  解析时间异常，数据库时间为空异常
+	 */
 	private boolean isRealTime(MessageTask messageTask) throws ParseException {
 		Integer threadNumber = messageTask.getThreadNumber();
 		// 判断是否在发送时间内

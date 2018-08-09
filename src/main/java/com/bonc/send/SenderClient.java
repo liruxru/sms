@@ -46,6 +46,8 @@ public class SenderClient extends Thread{
 			// 发送线程,分发任务  根据threadNum分发给线程
 			List<MessageTask> messages = MessageQueue.messages;
 			
+			
+			
 			// 计算threadNum的个数
 			/**
 			 * 如何更好的拆分到各个线程？？？？才有益于程序效率(均匀？？)
@@ -97,7 +99,7 @@ public class SenderClient extends Thread{
 			    t.join(); 
 			}
 			
-			
+			// 发送完通知任务执行
 			Constant.LOCK.notifyAll();
 		
 	    }

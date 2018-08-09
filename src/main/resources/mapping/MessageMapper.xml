@@ -30,7 +30,7 @@
 	    update SMS_SEND_FLAG A set A.send_flag = 1 where a.sale_id =  #{0}
 	  </update>
 	  
-	   <update id="updateTaskStatuBySaleIdAndStatus" parameterType="string">
+	   <update id="updateTaskStatuBySaleIdAndStatus" >
 	    update SMS_SEND_FLAG A set A.send_flag = #{1} where a.sale_id =  #{0}
 	  </update>
 	  
