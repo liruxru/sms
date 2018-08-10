@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.bonc.mapper.MessageMapper">
-<resultMap id="messageTask" type="com.bonc.pojo.MessageTask">
+	<resultMap id="messageTask" type="com.bonc.pojo.MessageTask">
 		<result property="saleId" column="SALE_ID" />
 		<result property="monthId" column="MONTH_ID" />
 		<result property="dayId" column="DAY_ID" />
@@ -11,57 +11,72 @@
 		<result property="threadNumber" column="THREAD_NUMBER" />
 		<result property="content" column="MESSAGE_CONTENT" />
 		<!-- 一对多 -->
-		<collection property="userNumbers" 
-			javaType="java.util.ArrayList" ofType="java.lang.String" 
-			select="selectUserNumbers" column="SALE_ID" >
+		<collection property="userNumbers"
+			javaType="java.util.ArrayList" ofType="java.lang.String"
+			select="selectUserNumbers" column="SALE_ID">
 		</collection>
 	</resultMap>
-	 <!--  查询获取需要发送的短信任务 -->
-	  <select id="scanTaskMessage"  resultMap="messageTask">
-	  SELECT  A.* , D.MESSAGE_CONTENT
-	  FROM SMS_SEND_FLAG A ,  SMS_DEVICE_MESSAGE C , SMS_MESSAGE D 
-	  WHERE A.SEND_FLAG = 0   AND A.THREAD_NUMBER = C.THREAD_NUMBER AND C.MESSAGE_ID = D.MESSAGE_ID 
-	  </select>
-	  <select id="selectUserNumbers"  resultType="string">
-	    select device_number from SMS_DEVICE_NUMBER where sale_id = #{saleId}
-	  </select>
-	  
-	   <update id="updateTaskStatuBySaleId" parameterType="string">
-	    update SMS_SEND_FLAG A set A.send_flag = 1 where a.sale_id =  #{0}
-	  </update>
-	  
-	   <update id="updateTaskStatuBySaleIdAndStatus" >
-	    update SMS_SEND_FLAG A set A.send_flag = #{1} where a.sale_id =  #{0}
-	  </update>
-	  
-	  
-	  
-	<!--  * 发送结束后日志记录 -->
-	<!-- public void insertTaskLog(MessageTask messageTask);  -->
-	<insert id="insertTaskLog"  parameterType="hashMap">
-		insert into SMS_NUMBER_LOG values(#{saleId},#{monthId},#{dayId},#{dataNo},#{deviceNumber},#{deviceType})
+	<!-- 查询获取需要发送的短信任务 -->
+	<select id="scanTaskMessage" resultMap="messageTask">
+		SELECT A.* ,
+		D.MESSAGE_CONTENT
+		FROM SMS_SEND_FLAG A , SMS_DEVICE_MESSAGE C ,
+		SMS_MESSAGE D
+		WHERE A.SEND_FLAG = 0 AND A.THREAD_NUMBER =
+		C.THREAD_NUMBER AND
+		C.MESSAGE_ID = D.MESSAGE_ID for update
+	</select>
+	<select id="selectUserNumbers" resultType="string">
+		select device_number
+		from SMS_DEVICE_NUMBER where sale_id = #{saleId}
+	</select>
+
+	<update id="updateTaskStatuBySaleId" parameterType="string">
+		update
+		SMS_SEND_FLAG A set A.send_flag = 1 where a.sale_id = #{0}
+	</update>
+
+	<update id="updateTaskStatuBySaleIdAndStatus">
+		update SMS_SEND_FLAG A set A.send_flag = #{1} where
+		a.sale_id = #{0}
+	</update>
+
+
+
+	<!-- * 发送结束后日志记录 -->
+	<!-- public void insertTaskLog(MessageTask messageTask); -->
+	<insert id="insertTaskLog" parameterType="hashMap">
+		insert into
+		SMS_NUMBER_LOG
+		values(#{saleId},#{monthId},#{dayId},#{dataNo},#{deviceNumber},#{deviceType})
 	</insert>
 	<!-- 网关返回信息记录 -->
-	<insert id="insertReportLog"  parameterType="hashMap">
-		insert into SC_SMS_REPORT values(#{userNumber},#{totalLength},#{state},#{errorCode},#{reportType},SYSDATE)
+	<insert id="insertReportLog" parameterType="hashMap">
+		insert into
+		SC_SMS_REPORT
+		values(#{userNumber},#{totalLength},#{state},#{errorCode},#{reportType},SYSDATE)
 	</insert>
-	
-	<insert id ="insertTaskLogs" parameterType="java.util.List" >
-          insert into SMS_NUMBER_LOG values 
-             <foreach collection ="list" item="reportLog" index= "index" separator =",">
-                 (
-                 #{reportLog.saleId},#{reportLog.monthId},#{reportLog.dayId},
-                 #{reportLog.dataNo},#{reportLog.deviceNumber},#{reportLog.deviceType}
-                 )
-             </foreach >
-      </insert >
-      
-      <select id="getTimes"  resultType="java.util.HashMap">
-      	select start_time startTime , end_time endTime  from SMS_SEND_TIME
-      </select>
-	<select id="getTimesByThreadNum"  resultType="java.util.HashMap"  parameterType="int">
-      	select start_time startTime , end_time endTime  from SMS_SEND_TIME where  THREAD_NUMBER = #{0}
-      </select>
-	  
-	
+
+	<insert id="insertTaskLogs" parameterType="list">
+		insert into SMS_NUMBER_LOG
+		(SALE_ID,MONTH_ID,DAY_ID,DATA_NO,DEVICE_NUMBER,DEVICE_TYPE)
+		<foreach collection="list" item="it" separator=" union all ">
+			select
+			#{it.saleId},#{it.monthId},#{it.dayId},
+			#{it.dataNo},#{it.deviceNumber},#{it.deviceType} from dual
+		</foreach>
+	</insert>
+
+	<select id="getTimes" resultType="java.util.HashMap">
+		select start_time startTime ,
+		end_time endTime from SMS_SEND_TIME
+	</select>
+	<select id="getTimesByThreadNum" resultType="java.util.HashMap"
+		parameterType="int">
+		select start_time startTime , end_time endTime from
+		SMS_SEND_TIME where
+		THREAD_NUMBER = #{0}
+	</select>
+
+
 </mapper>

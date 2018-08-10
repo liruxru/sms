@@ -45,12 +45,30 @@ public class MessageService {
 		messageMapper.insertReportLog(paramMap);
 		
 	}
+	/**
+	 * 获取任务，修改状态为发送中状态
+	 * @return
+	 */
 	public List<MessageTask> scanMessageTask() {
-		return messageMapper.scanTaskMessage();
+		List<MessageTask> scanTaskMessage = messageMapper.scanTaskMessage();
+		for (MessageTask messageTask : scanTaskMessage) {
+			// 修改即将发送的任务状态为10
+			messageMapper.updateTaskStatuBySaleIdAndStatus(messageTask.getSaleId(), 10);
+		}
+		return scanTaskMessage;
 	}
+	/**
+	 * 更新任务状态 从 到1 从未发送 转换为发送成功
+	 * @param saleId
+	 */
 	public void updateTaskStatuBySaleId(String saleId) {
 		 messageMapper.updateTaskStatuBySaleId(saleId);
 	}
+	
+	/**
+	 * 插入任务历史记录
+	 * @param messageTask
+	 */
 	public void insertTaskLog(MessageTask messageTask) {
 		List<Map<String,String>> paramMaps = new ArrayList<>();
 		List<String> userNumbers = messageTask.getUserNumbers();
@@ -85,13 +103,14 @@ public class MessageService {
 		return "0 0/15 "+startTime+"-"+endTime+" * * ?";
 	}
 	
+	
 	public Map<String,String>  getTimesByThreadNum(Integer threadNumber) {
 		return messageMapper.getTimesByThreadNum(threadNumber);
 		
 	}
+	
 	public void updateTaskStatuBySaleId(String saleId, int i) {
 		messageMapper.updateTaskStatuBySaleIdAndStatus(saleId,i);
-		
 	}
 
 }

@@ -21,6 +21,8 @@ import com.bonc.util.SpringUtil;
  */
 @Slf4j
 public class SenderClient extends Thread{
+	private List<MessageTask> messages;
+	
 
 	@Override
 	public void run() {

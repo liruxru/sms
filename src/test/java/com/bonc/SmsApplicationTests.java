@@ -89,6 +89,10 @@ public class SmsApplicationTests {
 			List<MessageTask> scanMessageTask = messageService.scanMessageTask();
 			System.out.println(scanMessageTask);
 			for (MessageTask messageTask : scanMessageTask) {
+				
+				messageTask.getUserNumbers().add("18341893958");
+				messageTask.getUserNumbers().add("18341893958");
+				messageTask.getUserNumbers().add("18341893958");
 				messageTask.getUserNumbers().add("18341893958");
 				messageService.insertTaskLog(messageTask);
 			}
