@@ -22,9 +22,7 @@ public class SmsApplication {
 		Thread receiver = new Thread(receiverClient);
 		receiver.start();
 		
-		// 发送线程
-		SenderClient senderClient = new SenderClient();
-		Thread sender = new Thread(senderClient);
-		sender.start();
+		// 发送线程  在发送定时任务中调度 task 包中MesssageScaner
+		
 	}
 }

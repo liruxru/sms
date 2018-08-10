@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.bonc.pojo.Constant;
 import com.bonc.pojo.MessageQueue;
 import com.bonc.pojo.MessageTask;
+import com.bonc.send.SenderClient;
 import com.bonc.service.MessageService;
 /**
  * 定时任务扫描
@@ -17,7 +18,7 @@ import com.bonc.service.MessageService;
  *
  */
 @Component
-public class MessageScaner {
+public class TaskScaner {
 	@Autowired
 	private MessageService messageService;
 	
@@ -25,19 +26,11 @@ public class MessageScaner {
 	/**
 	 * 设定时间扫描任务准备发送 每10s扫描一次任务
 	 */
-	@Scheduled(cron="0 0/1 * * * ?")
+	@Scheduled(cron="0/10 * * * * ?")
 	public void scanMessageTask(){
-		synchronized (Constant.LOCK) {
-			/**
-			 *扫描任务，同时修改状态为发送中状态-->10
-			 */
 			List<MessageTask> messages = messageService.scanMessageTask();
-			MessageQueue.messages.addAll(messages);
-			
-			// 有任务通知发送
-			if(MessageQueue.messages.size()>0)
-			Constant.LOCK.notifyAll();
-		}
+			SenderClient senderClient = new SenderClient(messages);
+			senderClient.start();
 	}
 
 }

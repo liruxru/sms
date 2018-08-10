@@ -46,7 +46,7 @@ public class MessageService {
 		
 	}
 	/**
-	 * 获取任务，修改状态为发送中状态
+	 * 获取任务，修改状态为发送中状态 --> 10
 	 * @return
 	 */
 	public List<MessageTask> scanMessageTask() {

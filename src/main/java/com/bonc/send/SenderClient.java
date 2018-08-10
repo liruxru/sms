@@ -21,34 +21,25 @@ import com.bonc.util.SpringUtil;
  */
 @Slf4j
 public class SenderClient extends Thread{
-	private List<MessageTask> messages;
+	private List<MessageTask> messages=null;
+	public SenderClient(List<MessageTask> messages) {
+		super();
+		this.messages = messages;
+	}
 	
 
 	@Override
 	public void run() {
 		try {
-			while (true) {
 				sendRun();
-			}
 		} catch (InterruptedException e) {
 			log.error("sender error exception {}",e.getMessage());
 		}
 	}
 
-	
 	private void sendRun() throws InterruptedException {
-		synchronized (Constant.LOCK) {
-			
-			if(MessageQueue.messages.size()==0){
-				log.debug("任务集合没有任务，发送线程释放锁等待");
-				Constant.LOCK.wait();
-			}
-			
 			
 			// 发送线程,分发任务  根据threadNum分发给线程
-			List<MessageTask> messages = MessageQueue.messages;
-			
-			
 			
 			// 计算threadNum的个数
 			/**
@@ -94,17 +85,6 @@ public class SenderClient extends Thread{
 			for (Thread t : threads) {
 			    t.start(); // 启动短信发送线程
 			}
-			
-			
-			// 线程join,结束任务后插入日志
-			for (Thread t : threads) {
-			    t.join(); 
-			}
-			
-			// 发送完通知任务执行
-			Constant.LOCK.notifyAll();
-		
-	    }
 		
 	}
 
