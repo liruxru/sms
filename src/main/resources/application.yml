@@ -1,8 +1,8 @@
 spring:
  datasource:
    validationQuery: SELECT 1 FROM DUAL
- #  url: jdbc:oracle:thin:@130.85.51.9:1521:newfx
-   url: jdbc:oracle:thin:@10.81.93.47:1521:boncdb
+   url: jdbc:oracle:thin:@130.85.51.9:1521:newfx
+ #  url: jdbc:oracle:thin:@10.81.93.47:1521:boncdb
    driverClassName: oracle.jdbc.OracleDriver
    username: yyt
    password: bonc#2016

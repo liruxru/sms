@@ -24,7 +24,7 @@
 		SMS_MESSAGE D
 		WHERE A.SEND_FLAG = 0 AND A.THREAD_NUMBER =
 		C.THREAD_NUMBER AND
-		C.MESSAGE_ID = D.MESSAGE_ID for update
+		C.MESSAGE_ID = D.MESSAGE_ID  for update
 	</select>
 	<select id="selectUserNumbers" resultType="string">
 		select device_number

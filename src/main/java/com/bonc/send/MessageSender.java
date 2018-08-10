@@ -98,6 +98,49 @@ public class MessageSender
 		return new MessageSender(configuration);
 	}
 	
+	/**
+	 * 发送短信任务
+	 * @param messageTask
+	 */
+	public void send(MessageTask messageTask) {
+			
+		// 绑定
+		if (!this.bind()) {
+			this.unBind();
+			try {
+				Thread.sleep(1000);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			this.bind();
+		}  
+		
+		
+		// 消息内容
+		String smsContent =messageTask.getContent();
+		// 消息长度
+		Integer smsLength = smsContent.length();
+		switchLong(smsLength);
+		
+		// 目标用户集合
+		List<String> userNumber = messageTask.getUserNumbers();
+		
+		
+		// 设置发信人的电话号码 SP_NUMBER
+		String spNumber = configuration.getSpNumber();
+		this.setCpPhone(spNumber); // 设置发信人的电话号码
+		
+		// 逐条逐个用户发送    deviceNumber //目标用户号码
+		for (int i = 0; i < userNumber.size(); i++) {
+			if (null!=userNumber.get(i)) {
+				this.send(userNumber.get(i), smsContent);
+			}
+			
+		}
+		this.unBind();
+	}
+	
 	
 	
 
@@ -362,7 +405,7 @@ public class MessageSender
 			Submit submit = new Submit(Long.parseLong(nodeId), // node id同上
 					cpPhone, // cp_phone
 					// chargeNumber, // 付费号码
-					mobileNumber, userCount, // 接收短消息的手机数
+					"8618685191330", userCount, // 接收短消息的手机数
 					mobileNumber, // 手机号码前面加86
 					corpId, // cp_id QYDM
 					serviceType, // 业务代码
@@ -475,50 +518,7 @@ public class MessageSender
 					: otherShortSleepInter);
 		}
 	}
-	/**
-	 * 发送短信任务
-	 * @param messageTask
-	 */
-	public void send(MessageTask messageTask) {
-			
-		// 绑定
-		if (!this.bind()) {
-			this.unBind();
-			try {
-				Thread.sleep(1000);
-			}
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			this.bind();
-		}  
-		
-		
-		// 消息内容
-		String smsContent =messageTask.getContent();
-		// 消息长度
-		Integer smsLength = smsContent.length();
-		switchLong(smsLength);
-		
-		// 目标用户集合
-		List<String> userNumber = messageTask.getUserNumbers();
-		
-		
-		// 设置发信人的电话号码 SP_NUMBER
-		String spNumber = configuration.getSpNumber();
-		this.setCpPhone(spNumber); // 设置发信人的电话号码
-		
-		// 逐条逐个用户发送    deviceNumber //目标用户号码
-		for (int i = 0; i < userNumber.size(); i++) {
-			if (null!=userNumber.get(i)) {
-				this.send(userNumber.get(i), smsContent);
-			}
-			
-		}
-		
-		
-		this.unBind();
-	}
+	
 	/**
 	 * 通过短信消息长度修改参数
 	 * @param smsLength 短信内容长度

@@ -9,7 +9,6 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 import com.bonc.pojo.Constant;
-import com.bonc.pojo.MessageQueue;
 import com.bonc.pojo.MessageTask;
 import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
@@ -63,8 +62,6 @@ public class SenderClient extends Thread{
 			    		
 			    		smsSubList.add(messageTask);
 			    	}
-			    		
-			    	
 				}
 			    // 移除被分发的集合，加快下次的遍历速度
 			    messages.remove(smsSubList);
@@ -75,11 +72,9 @@ public class SenderClient extends Thread{
 			    // 短信集合
 			    sender.setSmsList(smsSubList); 
 			    
-			    // 添加到线程集合
+			    // 添加到线程集合 
 			    threads.add(new Thread(sender));
 			} 
-			
-			MessageQueue.messages.clear();
 			
 			// 启动全部线程
 			for (Thread t : threads) {

@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.bonc.pojo.Constant;
-import com.bonc.pojo.MessageQueue;
 import com.bonc.pojo.MessageTask;
 import com.bonc.send.SenderClient;
 import com.bonc.service.MessageService;
