@@ -121,5 +121,16 @@ public class MessageService {
 	public MessageSenderConfiguration getMessageSenderConfigurationByThreadNumber(Integer threadNumber) {
 		return messageMapper.getMessageSenderConfigurationByThreadNumber(threadNumber);
 	}
+	/**
+	 * 获取线程池配置大小 
+	 * @param threadNumber
+	 * @return
+	 */
+	public int getThreadPoolSizeByThreadNumber(Integer threadNumber) {
+		return messageMapper.getThreadPoolSizeByThreadNumber(threadNumber);
+	}
+	public List<Integer> selectAllThreadNumberByCpHone(String cpPhone) {
+		return messageMapper.selectAllThreadNumberByCpHone(cpPhone);
+	}
 
 }

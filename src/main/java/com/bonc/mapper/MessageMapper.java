@@ -57,4 +57,10 @@ public interface MessageMapper {
 
 	public MessageSenderConfiguration getMessageSenderConfigurationByThreadNumber(Integer threadNumber);
 
+
+	public int getThreadPoolSizeByThreadNumber(Integer threadNumber);
+
+
+	public List<Integer> selectAllThreadNumberByCpHone(String cpPhone);
+
 }

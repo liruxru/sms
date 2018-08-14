@@ -19,4 +19,5 @@ public class MessageSenderConfiguration {
 	private String corpId;
 	private Long threadNumber;
 	private Boolean status;
+	private Long maxMessage;// 网关峰值
 }

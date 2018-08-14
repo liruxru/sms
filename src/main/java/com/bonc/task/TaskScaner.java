@@ -27,9 +27,9 @@ public class TaskScaner {
 	 */
 	@Scheduled(cron="0/10 * * * * ?")
 	public void scanMessageTask(){
-			List<MessageTask> messages = messageService.scanMessageTask();
-			SenderClient senderClient = new SenderClient(messages);
-			senderClient.start();
+		List<MessageTask> messages = messageService.scanMessageTask();
+		SenderClient senderClient = new SenderClient(messages);
+		senderClient.start();
 	}
 
 }

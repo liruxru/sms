@@ -133,6 +133,9 @@ public class SmsApplicationTests {
     	MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
     	MessageSenderConfiguration messageSenderConfigurationByThreadNumber = messageService.getMessageSenderConfigurationByThreadNumber(1);
 		System.out.println(messageSenderConfigurationByThreadNumber);
+		
+		int threadPoolSizeByThreadNumber = messageService.getThreadPoolSizeByThreadNumber(1);
+		System.out.println(threadPoolSizeByThreadNumber);
 	}
 
 }

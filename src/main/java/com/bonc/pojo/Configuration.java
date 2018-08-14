@@ -59,7 +59,11 @@ public class Configuration {
 	private int giMsgNum = 130; // 一次能发送的短信字
 	private final String prefix = "86"; // 前缀
 
-	
+//	Configuration(sleepInter=34, defaultSleepInter=40, otherShortSleepInter=40,
+//	otherLongSleepInter=100, serviceType=, feeType=1, fee=0, givenFee=0,
+//			agentFlag=1, mot=2, priority=8, expireTime=, scheduleTime=, 
+//			reportFlag=1, tp_pid=0, itp_udhi=0, messageCode=15, messageType=0, 
+//			sequenceNumber=-1, isLongMessage=false, giMsgNum=130, prefix=86)
 	
 	
 

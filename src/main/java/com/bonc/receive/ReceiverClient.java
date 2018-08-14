@@ -4,13 +4,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * 短信接收客户端
+ * 
  * @author j
  *
  */
 @Slf4j
-public class ReceiverClient implements Runnable{
+public class ReceiverClient implements Runnable {
 
 	private int port = 8881; // 8882
 	// 默认端口8881
@@ -32,7 +34,6 @@ public class ReceiverClient implements Runnable{
 		super();
 		this.port = port;
 	}
-	
 
 	@Override
 	public void run() {
@@ -46,7 +47,7 @@ public class ReceiverClient implements Runnable{
 			serverSocket = new ServerSocket(port);
 			log.info("Start to waiting for client...");
 			while (true) {
-				// 阻塞,接收消息 
+				// 阻塞,接收消息
 				Socket socket = serverSocket.accept();
 				log.info("Client socket connected at address:{} ", socket.toString());
 				try {

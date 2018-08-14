@@ -11,8 +11,9 @@ import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import spApi.Bind;
 import spApi.BindResp;
@@ -26,6 +27,8 @@ import com.bonc.pojo.Configuration;
 import com.bonc.pojo.Constant;
 import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
+import com.bonc.pool.SendThreadPool;
+import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
 import com.bonc.util.StringUtil;
 
@@ -87,8 +90,8 @@ public class MessageSender {
 			if (null != userNumber.get(i)) {
 				this.send(userNumber.get(i), smsContent);
 			}
-
 		}
+		// 接触绑定
 		this.unBind();
 	}
 
@@ -172,14 +175,14 @@ public class MessageSender {
 
 		// boolean isSuccess = prepareSend(prefix + userNumber, message, fee,
 		// socketOutputStream);
-		return prepareSend(configuration.getPrefix() + userNumber, message, configuration.getFee(), socketOutputStream);
+		return prepareSend(configuration.getPrefix() + userNumber, message,  socketOutputStream);
 	}
 
-	private boolean prepareSend(String sMobileStr, String sMsg, String sFee, OutputStream outputStream) {
+	private boolean prepareSend(String sMobileStr, String sMsg, OutputStream outputStream) {
 		if (configuration.isLongMessage()) {
-			return sendSubsectionLong(sMobileStr, sMsg, sFee, outputStream);
+			return sendSubsectionLong(sMobileStr, sMsg, outputStream);
 		} else {
-			return sendSubsection(sMobileStr, sMsg, sFee, outputStream);
+			return sendSubsection(sMobileStr, sMsg, outputStream);
 		}
 	}
 
@@ -192,13 +195,13 @@ public class MessageSender {
 	 * @param out
 	 * @return
 	 */
-	private boolean sendSubsection(String mobileNumber, String message, String fee, OutputStream out) {
+	private boolean sendSubsection(String mobileNumber, String message, OutputStream out) {
 		try {
 			String subMessage = message;
 
 			while (subMessage.length() > configuration.getGiMsgNum()) {
 				String sTemp = subMessage.substring(0, configuration.getGiMsgNum());
-				if (!sendMessage(mobileNumber, sTemp, fee))
+				if (!sendMessage(mobileNumber, sTemp))
 					return false;
 
 				subMessage = subMessage.substring(configuration.getGiMsgNum());
@@ -207,7 +210,7 @@ public class MessageSender {
 			}
 
 			if (subMessage.length() > 0) {
-				if (!sendMessage(mobileNumber, subMessage, fee))
+				if (!sendMessage(mobileNumber, subMessage))
 					return false;
 			}
 
@@ -229,7 +232,7 @@ public class MessageSender {
 	 * @return
 	 */
 	@SuppressWarnings("static-access")
-	private boolean sendSubsectionLong(String mobileNumber, String message, String fee, OutputStream out) {
+	private boolean sendSubsectionLong(String mobileNumber, String message,  OutputStream out) {
 		try {
 			Thread thread = new Thread();
 			thread.start();
@@ -261,7 +264,7 @@ public class MessageSender {
 
 				String content = new String(byteContent, "ISO8859-1");
 
-				if (!sendMessage(mobileNumber, content, fee))
+				if (!sendMessage(mobileNumber, content))
 					return false;
 
 				thread.sleep(configuration.getSleepInter());
@@ -283,28 +286,38 @@ public class MessageSender {
 	 * @param fee
 	 * @return
 	 */
-	private boolean sendMessage(String mobileNumber, String messageContent, String fee) {
-
-		synchronized (Constant.SEND_LOCK) {
-			/* 很多个线程发送时采用此方法 */
-			/*
-			 * if(Constant.countMessageNumber%20==0){ try { // 线程休眠不释放锁,全部线程都在等待
-			 * Thread.sleep(1000); } catch (InterruptedException e) { // TODO Auto-generated
-			 * catch block e.printStackTrace(); } }
-			 */
-
-			/* 单个线程采用此方法 */
-
-			if (Constant.countMessageNumber % 20 == 0 && (1000 - 20 * configuration.getSleepInter()) > 0) {
+	private boolean sendMessage(String mobileNumber, String messageContent) {
+		// 对相同的接入号加锁 
+		synchronized (senderConfiguration.getCpPhone()+"") {
+			
+			int sumThread = 0;
+			long count =0;
+			// 查询相同接入号的ThreadNumber
+			MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+			List<Integer> threadNumbers = messageService.selectAllThreadNumberByCpHone(senderConfiguration.getCpPhone());
+			for (Integer integer : threadNumbers) {
+				ThreadPoolExecutor threadPoolExecutor = SendThreadPool.threadPools.get(senderConfiguration.getThreadNumber()+"_thread");
+				if(threadPoolExecutor!=null) {
+					int activeCount = threadPoolExecutor.getActiveCount();
+					sumThread+=activeCount;
+					count+=Constant.countMessageNumbers[Integer.parseInt(senderConfiguration.getThreadNumber()+"")];
+					log.info("当前任务-->{}活动线程数为-->{}",senderConfiguration.getThreadNumber(),activeCount);
+				}
+			}
+			
+			long maxLock = senderConfiguration.getMaxMessage();
+			if (count % maxLock == 0 
+					&& (1000 - maxLock  * configuration.getSleepInter()) > 0) {
 				try {
-					Thread.sleep(1000 - 20 * (configuration.getSleepInter()));
+					Thread.sleep(1000 - (maxLock/sumThread) * (configuration.getSleepInter()));
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 
-			Constant.countMessageNumber = ++Constant.countMessageNumber % 20;
+			Constant.countMessageNumbers[Integer.parseInt(senderConfiguration.getThreadNumber()+"")] 
+					= ++Constant.countMessageNumbers[Integer.parseInt(senderConfiguration.getThreadNumber()+"")] % senderConfiguration.getMaxMessage();
 		}
 
 		if (StringUtil.isNullOrEmpty(configuration.getExpireTime())) {
@@ -318,7 +331,6 @@ public class MessageSender {
 
 		}
 
-		// System.out.println("------------expireTime--------:"+expireTime);
 
 		try {
 			int userCount = 1;
@@ -332,7 +344,7 @@ public class MessageSender {
 					senderConfiguration.getCorpId(), // cp_id QYDM
 					configuration.getServiceType(), // 业务代码
 					configuration.getFeeType(), // 计费类型
-					fee, // 短消息收费值
+					configuration.getFee(), // 短消息收费值
 					configuration.getGivenFee(), // 赠送话费
 					configuration.getAgentFlag(), // 代收标志
 					configuration.getMot(), // 引起MT的原因
@@ -374,8 +386,10 @@ public class MessageSender {
 		}
 	}
 
+	
+	
 	/**
-	 * 通过短信消息长度修改参数
+	 * 通过短信消息长度修改配置参数
 	 * 
 	 * @param smsLength 短信内容长度
 	 */

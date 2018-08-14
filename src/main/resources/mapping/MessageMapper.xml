@@ -85,7 +85,8 @@
 		select
 		config_id configId,
 		server_ip serverIp,
-		server_port serverPort,
+		server_port
+		serverPort,
 		login_user loginUser,
 		login_pass loginPass,
 		node_id nodeId,
@@ -93,8 +94,20 @@
 		charge_number chargeNumber,
 		corp_id corpId,
 		thread_number threadNumber,
-		status status from SMS_SENDER_CONFIG where status = 1 and thread_number = #{0}
+		status status ,
+		maxmessage from
+		SMS_SENDER_CONFIG where status = 1 and thread_number = #{0}
 	</select>
+
+	<select id="getThreadPoolSizeByThreadNumber" parameterType="int"
+		resultType="int">
+		select min(MAX_POOL_SIZE) from SMS_SENDER_CONFIG_POOL where thread_number =	#{0}
+	</select>
+	<select id="selectAllThreadNumberByCpHone" parameterType="string"
+		resultType="int">
+		select thread_number from SMS_SENDER_CONFIG where cp_phone = #{0}
+	</select>
+
 
 
 </mapper>
