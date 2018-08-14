@@ -24,7 +24,7 @@
 		SMS_MESSAGE D
 		WHERE A.SEND_FLAG = 0 AND A.THREAD_NUMBER =
 		C.THREAD_NUMBER AND
-		C.MESSAGE_ID = D.MESSAGE_ID  for update
+		C.MESSAGE_ID = D.MESSAGE_ID for update
 	</select>
 	<select id="selectUserNumbers" resultType="string">
 		select device_number
@@ -76,6 +76,24 @@
 		select start_time startTime , end_time endTime from
 		SMS_SEND_TIME where
 		THREAD_NUMBER = #{0}
+	</select>
+
+
+	<select id="getMessageSenderConfigurationByThreadNumber"
+		resultType="com.bonc.pojo.MessageSenderConfiguration"
+		parameterType="int">
+		select
+		config_id configId,
+		server_ip serverIp,
+		server_port serverPort,
+		login_user loginUser,
+		login_pass loginPass,
+		node_id nodeId,
+		cp_phone cpPhone,
+		charge_number chargeNumber,
+		corp_id corpId,
+		thread_number threadNumber,
+		status status from SMS_SENDER_CONFIG where status = 1 and thread_number = #{0}
 	</select>
 
 

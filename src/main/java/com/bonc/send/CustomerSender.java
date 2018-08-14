@@ -2,11 +2,11 @@ package com.bonc.send;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
 import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
@@ -15,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CustomerSender implements Runnable{
-	
-	MessageSender messageSender ;
+	private MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+	private MessageSender messageSender ;
 	public CustomerSender(MessageSender messageSender) {
 		this.messageSender=messageSender;
 	}
@@ -42,6 +42,8 @@ public class CustomerSender implements Runnable{
 			try {
 				// 满足发送时间就发送
 				if(isRealTime(messageTask)&&messageTask.getUserNumbers()!=null&&messageTask.getUserNumbers().size()>0) {
+					// 获取配置
+					init(messageTask);
 					messageSender.send(messageTask);
 					updateAndLog(messageTask);
 				}else {
@@ -57,9 +59,26 @@ public class CustomerSender implements Runnable{
 		log.info(" thread normal end! sned " + smsList.size() + " .");
 		
 	}
+	
+	/**
+	 * 初始化sender配置
+	 * @param messageTask
+	 */
+	private void init(MessageTask messageTask) {
+		try {
+			Integer threadNumber = messageTask.getThreadNumber();
+			MessageSenderConfiguration senderConfiguration=
+			messageService.getMessageSenderConfigurationByThreadNumber(threadNumber);
+			if(senderConfiguration!=null)
+			messageSender.setSenderConfiguration(senderConfiguration);
+			else throw new RuntimeException("senderConfiguration get error ,please check database SMS_SENDER_CONFIG");
+		} catch (Exception e) {
+			throw new RuntimeException(e.getMessage());
+		}
+		
+	}
 
 	private void updateAndLog(MessageTask messageTask) {
-		MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
 		// 修改状态
 		messageService.updateTaskStatuBySaleId(messageTask.getSaleId());
 		// 日志记录
@@ -67,7 +86,6 @@ public class CustomerSender implements Runnable{
 	}
 	
 	private void updateStatus(MessageTask messageTask) {
-		MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
 		// 修改状态
 		messageService.updateTaskStatuBySaleId(messageTask.getSaleId(),2);
 	}
@@ -80,7 +98,6 @@ public class CustomerSender implements Runnable{
 	private boolean isRealTime(MessageTask messageTask) throws ParseException {
 		Integer threadNumber = messageTask.getThreadNumber();
 		// 判断是否在发送时间内
-    	MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
     	Map<String, String> times = messageService.getTimesByThreadNum(threadNumber);
     	String startTime = times.get("STARTTIME");
 		String endTime = times.get("ENDTIME");

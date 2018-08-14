@@ -3,6 +3,7 @@ package com.bonc.mapper;
 import java.util.List;
 import java.util.Map;
 
+import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
 
 public interface MessageMapper {
@@ -52,5 +53,8 @@ public interface MessageMapper {
 
 
 	public void updateTaskStatuBySaleIdAndStatus(String saleId, int i);
+
+
+	public MessageSenderConfiguration getMessageSenderConfigurationByThreadNumber(Integer threadNumber);
 
 }

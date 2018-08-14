@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.bonc.pojo.Configuration;
+import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
 import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
@@ -124,6 +125,14 @@ public class SmsApplicationTests {
 			System.out.println("ok");
 		}
 		
+	}
+	@Test
+	public void name7() {
+		
+		// 判断是否在发送时间内
+    	MessageService messageService = (MessageService) SpringUtil.getBean("messageService");
+    	MessageSenderConfiguration messageSenderConfigurationByThreadNumber = messageService.getMessageSenderConfigurationByThreadNumber(1);
+		System.out.println(messageSenderConfigurationByThreadNumber);
 	}
 
 }

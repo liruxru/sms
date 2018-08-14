@@ -14,21 +14,12 @@ import org.springframework.stereotype.Component;
 @Component("configuration")
 @ConfigurationProperties(prefix = "messager")
 public class Configuration {
-	private String serverIp = "10.157.39.14"; // *******************192.10.10.8
-	private int port = 8801; // *******************8801
-	private String loginUser = "bcs_01"; // *******************sh10655739
-	private String loginPasswd = "bcs_123"; // *******************1234
-	
 	private int sleepInter = 34; // 发送消息休眠时间
 	private int defaultSleepInter = 2;
 	private int otherShortSleepInter = 34;
 	private int otherLongSleepInter = 100;
 	
 	
-	private String nodeId = "3085173703"; // *******************3021021854
-	private String cpPhone = "10016"; // *******************10655739
-	private String chargeNumber = "-1"; // 付费号码 如果有sp付费填
-	private String corpId = "73403"; // *******************21854
 	private String serviceType = ""; // 业务代码
 	private int feeType = 0; // 收费类型
 	
@@ -64,7 +55,12 @@ public class Configuration {
 	public int sequenceNumber = -1; // 信息序列号
 	private boolean isLongMessage = false; // 是否长短信
 	
-	private String spNumber;
+
+	private int giMsgNum = 130; // 一次能发送的短信字
+	private final String prefix = "86"; // 前缀
+
+	
+	
 	
 
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bonc.mapper.MessageMapper;
+import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
 
 import lombok.extern.slf4j.Slf4j;
@@ -111,6 +112,14 @@ public class MessageService {
 	
 	public void updateTaskStatuBySaleId(String saleId, int i) {
 		messageMapper.updateTaskStatuBySaleIdAndStatus(saleId,i);
+	}
+	/**
+	 * 通过threadNumber获取配置
+	 * @param threadNumber
+	 * @return
+	 */
+	public MessageSenderConfiguration getMessageSenderConfigurationByThreadNumber(Integer threadNumber) {
+		return messageMapper.getMessageSenderConfigurationByThreadNumber(threadNumber);
 	}
 
 }

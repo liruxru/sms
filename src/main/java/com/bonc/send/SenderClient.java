@@ -9,6 +9,7 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 
 import com.bonc.pojo.Constant;
+import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
 import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
@@ -67,7 +68,9 @@ public class SenderClient extends Thread{
 			    messages.remove(smsSubList);
 			    if (smsSubList.isEmpty()) break;
 			    
-			    MessageSender messageSender = MessageSender.build();
+			    
+			    
+			    MessageSender messageSender = new MessageSender();
 			    CustomerSender sender = new CustomerSender(messageSender);
 			    // 短信集合
 			    sender.setSmsList(smsSubList); 
