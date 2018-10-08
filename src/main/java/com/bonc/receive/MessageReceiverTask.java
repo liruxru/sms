@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Date;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -171,7 +172,6 @@ public class MessageReceiverTask implements Runnable {
 					Integer errorCode = report.getErrorCode();
 					Integer reportType = report.getReportType();
 					
-					// 插入状态日志
 					messageService.insertReportLog(userNumber, totalLength, state, errorCode, reportType);
 				break;
 			}

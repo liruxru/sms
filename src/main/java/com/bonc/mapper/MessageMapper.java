@@ -1,5 +1,6 @@
 package com.bonc.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -62,5 +63,11 @@ public interface MessageMapper {
 
 
 	public List<Integer> selectAllThreadNumberByCpHone(String cpPhone);
+
+
+	public boolean getSystemOnOff();
+
+
+	public Date selectReportMaxDate(String userNumber);
 
 }

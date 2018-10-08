@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.bonc.mapper.MessageMapper;
 import com.bonc.pojo.Configuration;
 import com.bonc.pojo.MessageSenderConfiguration;
 import com.bonc.pojo.MessageTask;
@@ -75,11 +76,14 @@ public class SmsApplicationTests {
 		List<MessageTask> scanMessageTask = messageService.scanMessageTask();
 		System.out.println(scanMessageTask);
 	}
-	
+	@Autowired
+	MessageMapper messageMapper;
 	@Test
 	public void name3() {
 //		 messageService.updateTaskStatuBySaleId("test");
-		System.out.println(configuration);
+//		System.out.println(configuration);
+		Date maxDate = messageMapper.selectReportMaxDate("17685315359");
+		System.out.println((new Date().getTime()-maxDate.getTime())/60000);
 	}
 	/**
 	 * 历史记录插入测试

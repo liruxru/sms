@@ -68,14 +68,19 @@ public class CustomerSender implements Runnable {
 	 * @param messageTask
 	 */
 	private void init(MessageTask messageTask) {
+		
 		try {
 			Integer threadNumber = messageTask.getThreadNumber();
+			// 数据库查询获取该线程发送器核心配置
 			MessageSenderConfiguration senderConfiguration = messageService
 					.getMessageSenderConfigurationByThreadNumber(threadNumber);
-			if (senderConfiguration != null)
+			if (senderConfiguration != null) {
 				messageSender.setSenderConfiguration(senderConfiguration);
-			else
+				log.debug(" sender core config-->{}" ,senderConfiguration);
+			}else {
 				throw new RuntimeException("senderConfiguration get error ,please check database SMS_SENDER_CONFIG");
+			}
+				
 		} catch (Exception e) {
 			throw new RuntimeException(e.getMessage());
 		}

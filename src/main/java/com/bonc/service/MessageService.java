@@ -1,6 +1,7 @@
 package com.bonc.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +38,26 @@ public class MessageService {
 	 */
 	public void insertReportLog(String userNumber, Integer totalLength,
 			Integer state, Integer errorCode, Integer reportType) {
-		Map<String, Object> paramMap = new HashMap<String, Object>();
-		paramMap.put("userNumber", userNumber);
-		paramMap.put("totalLength", totalLength);
-		paramMap.put("state", state);
-		paramMap.put("errorCode", errorCode);
-		paramMap.put("reportType", reportType);
-		messageMapper.insertReportLog(paramMap);
+		// 首先通过电话号码查询 最大日期
+		Date maxDate = messageMapper.selectReportMaxDate(userNumber);
+		if(log.isDebugEnabled()&&null!=maxDate) {
+			log.debug("最近一次返回时间与系统时间差--{}分",(new Date().getTime()-maxDate.getTime())/60000);
+		}
+		if(log.isDebugEnabled()&&null==maxDate) {
+			log.debug("{}-->该电话号码第一次推送短信",userNumber);
+		}
+		
+		// 大于15分钟才插入
+		if(maxDate==null||new Date().getTime()-maxDate.getTime()>15L*60*1000) {
+			Map<String, Object> paramMap = new HashMap<String, Object>();
+			paramMap.put("userNumber", userNumber);
+			paramMap.put("totalLength", totalLength);
+			paramMap.put("state", state);
+			paramMap.put("errorCode", errorCode);
+			paramMap.put("reportType", reportType);
+			messageMapper.insertReportLog(paramMap);
+		}
+	
 		
 	}
 	/**
@@ -132,5 +146,13 @@ public class MessageService {
 	public List<Integer> selectAllThreadNumberByCpHone(String cpPhone) {
 		return messageMapper.selectAllThreadNumberByCpHone(cpPhone);
 	}
+	/**
+	 * 获取系统开关
+	 * @return
+	 */
+	public boolean getSystemOnOff() {
+		return messageMapper.getSystemOnOff();
+	}
+
 
 }

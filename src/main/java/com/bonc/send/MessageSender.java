@@ -10,18 +10,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
-
-import lombok.extern.slf4j.Slf4j;
-import spApi.Bind;
-import spApi.BindResp;
-import spApi.SGIP_Command;
-import spApi.SGIP_Exception;
-import spApi.Submit;
-import spApi.SubmitResp;
-import spApi.Unbind;
 
 import com.bonc.pojo.Configuration;
 import com.bonc.pojo.Constant;
@@ -32,18 +23,32 @@ import com.bonc.service.MessageService;
 import com.bonc.util.SpringUtil;
 import com.bonc.util.StringUtil;
 
+import lombok.extern.slf4j.Slf4j;
+import spApi.Bind;
+import spApi.BindResp;
+import spApi.SGIP_Command;
+import spApi.SGIP_Exception;
+import spApi.Submit;
+import spApi.SubmitResp;
+import spApi.Unbind;
+
 /**
  * 短消息发送类，封装了短信发送方法
  **/
 @Slf4j
 public class MessageSender {
 	public static final String DEFAULT_CP = "10016";
+	// sp_api相关
 	private Bind bind = null;
-	private Socket socket = null;
-	private OutputStream socketOutputStream = null;
-	private InputStream socketInputStream = null;
 	private Unbind unBind = null;
 	private SGIP_Command sgipCommand = new SGIP_Command();
+	// 网管连接
+	private Socket socket = null;
+	// 推送至网关的连接输出流
+	private OutputStream socketOutputStream = null;
+	// 网管接收推送短信返回流
+	private InputStream socketInputStream = null;
+
 
 	private MessageSenderConfiguration senderConfiguration;
 	private Configuration configuration;
@@ -96,11 +101,7 @@ public class MessageSender {
 	}
 
 	public boolean bind() {
-		return bind(senderConfiguration.getServerIp(), senderConfiguration.getServerPort());
-	}
-
-	public boolean bind(String serverIp, int port) {
-		SocketAddress serverSocketAddress = new InetSocketAddress(serverIp, port);
+		SocketAddress serverSocketAddress = new InetSocketAddress(senderConfiguration.getServerIp(), senderConfiguration.getServerPort());
 		boolean isConnect = false;
 		while (!isConnect) {
 			try {
@@ -146,6 +147,7 @@ public class MessageSender {
 		return true;
 	}
 
+
 	public void unBind() {
 		try {
 			unBind = new Unbind(Long.parseLong(senderConfiguration.getNodeId()));
@@ -167,28 +169,20 @@ public class MessageSender {
 	 * @return
 	 */
 	public boolean send(String userNumber, String message) {
-		try {
-			Thread.sleep(configuration.getSleepInter());
-		} catch (InterruptedException e) {
-			log.error(e.getMessage());
-		}
-
-		// boolean isSuccess = prepareSend(prefix + userNumber, message, fee,
-		// socketOutputStream);
-		return prepareSend(configuration.getPrefix() + userNumber, message,  socketOutputStream);
-	}
-
-	private boolean prepareSend(String sMobileStr, String sMsg, OutputStream outputStream) {
+		userNumber =  configuration.getPrefix() + userNumber;
+		
 		if (configuration.isLongMessage()) {
-			return sendSubsectionLong(sMobileStr, sMsg, outputStream);
+			// 长短信发送
+			return sendSubsectionLong(userNumber, message, socketOutputStream);
 		} else {
-			return sendSubsection(sMobileStr, sMsg, outputStream);
+			// 短短信发送
+			return sendSubsection(userNumber, message, socketOutputStream);
 		}
 	}
+
 
 	/**
 	 * 消息长度<70
-	 * 
 	 * @param mobileNumber
 	 * @param message
 	 * @param fee
@@ -301,7 +295,7 @@ public class MessageSender {
 					int activeCount = threadPoolExecutor.getActiveCount();
 					sumThread+=activeCount;
 					count+=Constant.countMessageNumbers[Integer.parseInt(senderConfiguration.getThreadNumber()+"")];
-					log.info("当前任务-->{}活动线程数为-->{}",senderConfiguration.getThreadNumber(),activeCount);
+					log.debug("当前任务-->{}活动线程数为-->{}",senderConfiguration.getThreadNumber(),activeCount);
 				}
 			}
 			
@@ -338,8 +332,8 @@ public class MessageSender {
 
 			Submit submit = new Submit(Long.parseLong(senderConfiguration.getNodeId()), // node id同上
 					senderConfiguration.getCpPhone(), // cp_phone
-					// chargeNumber, // 付费号码
-					senderConfiguration.getChargeNumber(), userCount, // 接收短消息的手机数
+					senderConfiguration.getChargeNumber(), // chargeNumber// 付费号码
+					userCount, // 接收短消息的手机数
 					mobileNumber, // 手机号码前面加86
 					senderConfiguration.getCorpId(), // cp_id QYDM
 					configuration.getServiceType(), // 业务代码

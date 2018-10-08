@@ -40,8 +40,11 @@
 		update SMS_SEND_FLAG A set A.send_flag = #{1} where
 		a.sale_id = #{0}
 	</update>
-
-
+	<!-- 获取系统设置开关 -->
+    
+	<select id="getSystemOnOff" resultType="boolean">
+		select TURN_ON_OFF  from SMS_SYSTEM_SWITCH_ON_OFF
+	</select>
 
 	<!-- * 发送结束后日志记录 -->
 	<!-- public void insertTaskLog(MessageTask messageTask); -->
@@ -50,6 +53,10 @@
 		SMS_NUMBER_LOG
 		values(#{saleId},#{monthId},#{dayId},#{dataNo},#{deviceNumber},#{deviceType})
 	</insert>
+	
+	<select id="selectReportMaxDate" resultType="java.util.Date">
+		select max(report_time)  from SC_SMS_REPORT where device_number  = #{0}
+	</select>
 	<!-- 网关返回信息记录 -->
 	<insert id="insertReportLog" parameterType="hashMap">
 		insert into

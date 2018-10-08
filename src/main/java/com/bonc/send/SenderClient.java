@@ -39,6 +39,7 @@ public class SenderClient extends Thread {
 	private void sendRun() throws InterruptedException {
 		// 遍历任务，分发线程
 		for (MessageTask messageTask : messagesTask) {
+			// 初始化一个发送器 并设置一般配置 （配置文件中的）
 			MessageSender messageSender = new MessageSender();
 			CustomerSender sender = new CustomerSender(messageSender);
 			// 短信集合
